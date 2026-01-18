@@ -1,30 +1,33 @@
-import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import fs from "fs";
+import path from "path";
+import app from "./app.js";
 import connectDB from "./config/db.js";
-import productRoutes from "./routes/productRoutes.js";
 
 dotenv.config();
 
-const app = express();
+// absolute upload path
+const uploadDir = path.join(process.cwd(), "uploads");
 
-// ✅ MIDDLEWARE (ORDER VERY IMPORTANT)
-app.use(cors({
-  origin: "http://localhost:5173",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
+// auto-create uploads folder
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
-app.use(express.json());
+// static uploads
+app.use("/uploads", express.static(uploadDir));
 
-// ✅ ROUTES
-app.use("/api", productRoutes);
-
-// ✅ DB CONNECT
+// DB
 connectDB();
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
+
+// console.log("EMAIL_USER:", process.env.EMAIL_USER);
+// console.log("BREVO_API_KEY:", process.env.BREVO_API_KEY ? "LOADED" : "MISSING");
+
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
